@@ -47,3 +47,14 @@ Marker: {TEST_MARKER}
 if __name__ == "__main__":
     main()
 ``
+ # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td) # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td) # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td) # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td) # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td)
