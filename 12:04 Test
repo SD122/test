@@ -1,0 +1,49 @@
+import os
+import subprocess
+import tempfile
+from datetime import datetime
+
+# ---- CONFIG ----
+REPO_URL = os.environ.get("GITHUB_REPO_URL", "https://github.com/<owner>/<repo>.git")
+BRANCH = os.environ.get("GITHUB_BRANCH", "dlp-test")
+# Use a synthetic marker that matches YOUR custom DLP dictionary/engine
+TEST_MARKER = os.environ.get("DLP_TEST_MARKER", "DLP_TEST_TOKEN_12345_DO_NOT_USE_REAL_DATA")
+
+def run(cmd, cwd):
+    print(f"\n$ {' '.join(cmd)}")
+    r = subprocess.run(cmd, cwd=cwd, text=True, capture_output=True)
+    print(r.stdout)
+    if r.returncode != 0:
+        print(r.stderr)
+        raise SystemExit(r.returncode)
+
+def main():
+    with tempfile.TemporaryDirectory() as td:
+        run(["git", "init"], td)
+        run(["git", "config", "user.name", "Zscaler DLP Test"], td)
+        run(["git", "config", "user.email", "dlp-test@example.invalid"], td)
+
+        # Create a file containing a synthetic token (your DLP engine should match this)
+        fname = "dlp_test_payload.txt"
+        payload = f"""Zscaler Inline Web DLP Test
+Timestamp: {datetime.utcnow().isoformat()}Z
+Marker: {TEST_MARKER}
+"""
+        with open(os.path.join(td, fname), "w", encoding="utf-8") as f:
+            f.write(payload)
+
+        run(["git", "add", fname], td)
+        run(["git", "commit", "-m", "DLP test commit (synthetic marker)"], td)
+
+        # Add remote and push a new branch
+        run(["git", "remote", "add", "origin", REPO_URL], td)
+        run(["git", "checkout", "-b", BRANCH], td)
+
+        # Push (this is the network action that should hit ZIA Inline Web DLP)
+        run(["git", "push", "-u", "origin", BRANCH], td)
+
+        print("\n✅ Push completed. Now validate in Zscaler logs / DLP notifications per your process.")
+
+if __name__ == "__main__":
+    main()
+``
